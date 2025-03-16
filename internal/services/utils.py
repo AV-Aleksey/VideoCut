@@ -1,37 +1,34 @@
 import re
-
+from datetime import datetime, timedelta
 from rapidfuzz import process, fuzz
 
 def compare_query_to_text(query, text):
     # Список исключений (например, предлоги, короткие фразы)
-    stop_words = {"да", "ну", "нет", "как", "в", "и", "на", "с", "по", "для", "от", "к", "что"}
+    stop_words = {"да", "ну", "нет", "как", "в", "и", "на", "с", "по", "для", "от", "к", "что", "а"}
     
     # Убираем предлоги и короткие слова
     def clean_text(text):
         return [word for word in text.lower().split() if word not in stop_words]
+    
+    def calculate_match_percent(count, matchCount):
+        if count == 0:
+            return 0  # Чтобы избежать деления на ноль
+        percent = (matchCount / count) * 100
+        return percent
 
     # Очистка текста
     query_words = clean_text(query)
-    text_words = clean_text(text)
 
-    # Если запрос слишком короткий (например, одна или две фразы), не проверяем
-    if len(query_words) == 0:
-        return False
-    
-    # 1. Проверка на подстроку (используем partial_ratio)
-    if fuzz.partial_ratio(query.lower(), text.lower()) > 80:
+    matchCount = 0;
+    for query_part in query_words:
+        if fuzz.partial_ratio(query_part, text.lower()) > 80:
+            matchCount += 1
+
+    result = calculate_match_percent(len(query_words), matchCount)
+
+    if result > 60:
         return True
 
-    # 2. Проверка на схожесть с ошибками (используем ratio)
-    if fuzz.ratio(query.lower(), text.lower()) > 70:
-        return True
-
-    # 3. Проверка на совпадение более 50% слов (по словам)
-    common_words = len(set(query_words).intersection(set(text_words)))
-    if common_words / len(query_words) > 0.5:
-        return True
-
-    # Если не совпадает по ни одному из критериев
     return False
 
 class Utils:
@@ -58,6 +55,8 @@ class Utils:
             if compare_query_to_text(search_text, text):
                 filtered_subtitles.append((time, text))
 
+
+        print( filtered_subtitles)
         if not filtered_subtitles:
             return None  # Если вообще ничего не нашли, возвращаем None
 
@@ -73,3 +72,26 @@ class Utils:
             return filtered_subtitles[index]
 
         return None
+    
+    def convert_and_round_time(self, time_str):
+         # Формат времени
+        time_format = "%H:%M:%S,%f"
+    
+        # Разделяем строку по ' --> '
+        start_time_str, end_time_str = time_str.split(" --> ")
+
+        # Преобразуем строку времени в объект datetime
+        start_time = datetime.strptime(start_time_str, time_format)
+        end_time = datetime.strptime(end_time_str, time_format)
+
+        # Убавляем 1 секунду от start_time
+        start_time_adjusted = start_time - timedelta(seconds=2)
+        
+        # Прибавляем 1 секунду к end_time
+        end_time_adjusted = end_time + timedelta(seconds=2)
+
+        # Преобразуем в строку в формате "HH:MM:SS"
+        start_time_adjusted_str = start_time_adjusted.strftime("%H:%M:%S")
+        end_time_adjusted_str = end_time_adjusted.strftime("%H:%M:%S")
+
+        return [start_time_adjusted_str, end_time_adjusted_str]
