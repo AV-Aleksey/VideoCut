@@ -5,8 +5,11 @@ import uuid
 
 
 class Video:
-    def cut(self, input_file, start_time, end_time, output_dir, video_name):
+    def cut(self, start_time, end_time, video_name):
         salt = uuid.uuid4().hex
+        
+        input_file = Path(__file__).parent.parent / "assets" /  "movies" / f"{video_name}.mp4"
+        output_dir = Path(__file__).parent.parent / "assets" / "results"
 
         # Формат имени выходного файла
         output_file = output_dir / (video_name + salt + ".mp4")
@@ -27,7 +30,5 @@ class Video:
         ]
         
         subprocess.run(command, check=True)
-
-        print(f"Обрезка завершена. Сохранено в: {output_path}")
 
         return Path(output_path) 

@@ -1,40 +1,47 @@
-
-from pathlib import Path
 from fastapi import Depends, FastAPI, HTTPException
-from fastapi.responses import FileResponse
 
-from internal.depends import get_utils_service, get_video_service
+from internal.depends import get_video_service, get_subtitles_service
 from internal.schemas.video import VideoRequest
-from internal.services.utils import Utils
+from internal.services.subtitles import Subtitles
 from internal.services.video import Video
 
 app = FastAPI()
 
 @app.post("/video")
-async def create_orders(body: VideoRequest, utils_service: Utils = Depends(get_utils_service), video_service: Video = Depends(get_video_service)):
+async def create_video(body: VideoRequest, subtitles_service: Subtitles = Depends(get_subtitles_service), video_service: Video = Depends(get_video_service)):
     try:
-        file_path = Path(__file__).parent / "assets" / "bumer.srt"
+        result = []
+        for movie in subtitles_service.list():
+            target = subtitles_service.find(movie_name=movie, search_text=body.text)
+            
+            if target:
+                target['movie_name'] = movie
+                result.append(target) 
+        
 
-        subtitles = utils_service.load_subtitles(file_path)
+        return result
 
-        text = utils_service.find_text_in_subtitles(body.text, subtitles)
+        # if target:
+        #     result_file_path = video_service.cut(
+        #         video_name=movie_name,
+        #         start_time=target['startTime'], 
+        #         end_time=target['endTime'], 
+        #     )
 
-        if text:
-            [start, end] = utils_service.convert_and_round_time(text[0])
+        #     if result_file_path.exists():
+        #         response = FileResponse(result_file_path, media_type="video/mp4", filename='shorts')
 
-            input_file = Path(__file__).parent / "assets" / "bumer.mp4"  # Входной файл
-            start_time = start  # Время начала
-            end_time = end   # Время окончания
-            output_dir = Path(__file__).parent / "assets" / "results"  # Папка для результата
-            video_name = "bumer"
+        #         return response
 
-            result_file_path = video_service.cut(input_file, start_time, end_time, output_dir, video_name)
-
-            if result_file_path.exists():
-                response = FileResponse(result_file_path, media_type="video/mp4", filename='shorts')
-
-                return response
-
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "UNKNOWN_ERROR", "message": str(e)},
+        )
+    
+@app.post("/test")
+async def test(subtitles_service: Subtitles = Depends(get_subtitles_service)):
+    try:
         return None
     except Exception as e:
         raise HTTPException(
