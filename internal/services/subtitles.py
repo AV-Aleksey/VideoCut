@@ -56,7 +56,6 @@ class Subtitles:
         return [file.stem for file in subtitles_dir.glob("*.srt")]
 
     def parse(self, path) -> List[Dict[str, str]]:
-        #Удаляет HTML-теги из текста
         def clean_text(text: str) -> str:
             text = re.sub(r"<.*?>", "", text).lower().replace("\n", " ").strip()
             text = re.sub(r"[.,!?()\[\]{}\-]", "", text)
@@ -68,8 +67,8 @@ class Subtitles:
         parsed_subtitles = []
         for subtitle in subtitles:
             parsed_subtitles.append({
-                "startTime": str(subtitle.start).split('.')[0],
-                "endTime": str(subtitle.end).split('.')[0],
+                "start_time": str(subtitle.start).split('.')[0],
+                "end_time": str(subtitle.end).split('.')[0],
                 "text": clean_text(subtitle.content)
             })
     

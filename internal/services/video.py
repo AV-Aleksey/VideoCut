@@ -1,8 +1,18 @@
+import asyncio
 import os
-from pathlib import Path
-import subprocess
 import uuid
+from fastapi.responses import StreamingResponse
+import ffmpeg._run as ffmpeg
 
+
+from pathlib import Path
+from datetime import datetime, timedelta
+
+def add_seconds(time_str, seconds, format="%H:%M:%S"):
+    time_obj = datetime.strptime(time_str, format)
+    time_obj += timedelta(seconds=seconds)
+
+    return time_obj.strftime(format)
 
 class Video:
     def cut(self, start_time, end_time, video_name):
@@ -17,18 +27,37 @@ class Video:
         # Полный путь для сохранения выходного файла
         output_path = os.path.join(output_dir, output_file)
 
-        # Команда для обрезки видео с использованием FFmpeg
-        command = [
-            "ffmpeg",
-            "-i", str(input_file),
-            "-ss", start_time,  # Время начала обрезки
-            "-to", end_time,    # Время окончания обрезки
-            "-c:v", "libx264",  # Перекодировка видео
-            "-c:a", "aac",      # Перекодировка аудио
-            "-strict", "experimental",  # Если используется нестабильная версия кодека
-            str(output_file)    # Путь к файлу вывода
-        ]
-        
-        subprocess.run(command, check=True)
+        (
+            ffmpeg
+            .input(str(input_file), ss=add_seconds(start_time, -1), to=add_seconds(end_time, 1))
+            .output(str(output_file), vcodec="libx264", acodec="aac")
+            .run(overwrite_output=True)
+        )
 
         return Path(output_path) 
+    
+    async def stream(self, start_time: float, end_time: float, video_name: str):
+        input_file = Path(__file__).parent.parent / "assets" / "movies" / f"{video_name}.mp4"
+
+        print(input_file, '1 382 32183 2938 9283 28093 21890')
+
+        command = (
+            ffmpeg.input(str(input_file), ss=start_time, t=6)
+            .output("pipe:", format="mp4", vcodec="libx264", movflags="frag_keyframe+empty_moov")
+            .global_args("-loglevel", "error")
+        )
+
+        process = command.run_async(pipe_stdout=True, pipe_stderr=True)
+
+        try:
+            for chunk in iter(lambda: process.stdout.read(1024 * 1024), b""):
+                yield chunk
+        finally:
+            process.kill()
+
+        # 🔥 Проверяем ошибки, если что-то пошло не так
+        stderr_output = process.stderr.read().decode("utf-8").strip()
+        if stderr_output:
+            print(f"FFmpeg ERROR: {stderr_output}")
+
+
