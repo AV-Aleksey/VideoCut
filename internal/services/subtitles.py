@@ -1,10 +1,11 @@
-import json
-from pathlib import Path
-import srt
-from typing import List, Dict
-
 import re
+import json
+import srt
+
+from typing import List, Dict
+from pathlib import Path
 from rapidfuzz import fuzz
+from internal.config import settings
 
 def compare_percent(query, text):
     # Список исключений (например, предлоги, короткие фразы)
@@ -32,8 +33,9 @@ def compare_percent(query, text):
 
 class Subtitles:
     def get(self, name):
-        srt_path = Path(__file__).parent.parent / "assets" / "subtitles" / f"{name}.srt"
-        json_path = Path(__file__).parent.parent / "assets" / "subtitles" / "json" / f"{name}.json"
+        print()
+        srt_path = Path(settings.SOURCE_PATH) / "subtitles" / f"{name}.srt"
+        json_path = Path(settings.SOURCE_PATH) / "subtitles" / "json" / f"{name}.json"
 
         if json_path.exists():
             with open(json_path, 'r', encoding='utf-8') as json_file:
@@ -51,7 +53,7 @@ class Subtitles:
         
 
     def list(self):
-        subtitles_dir = Path(__file__).parent.parent / "assets" / "subtitles"
+        subtitles_dir = Path(settings.SOURCE_PATH) / "subtitles"
 
         return [file.stem for file in subtitles_dir.glob("*.srt")]
 

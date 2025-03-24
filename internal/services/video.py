@@ -1,8 +1,7 @@
-import asyncio
 import os
 import uuid
-from fastapi.responses import StreamingResponse
 import ffmpeg._run as ffmpeg
+from internal.config import settings
 
 
 from pathlib import Path
@@ -17,9 +16,11 @@ def add_seconds(time_str, seconds, format="%H:%M:%S"):
 class Video:
     def cut(self, start_time, end_time, video_name):
         salt = uuid.uuid4().hex
+
+        print(settings.SOURCE_PATH)
         
-        input_file = Path(__file__).parent.parent / "assets" /  "movies" / f"{video_name}.mp4"
-        output_dir = Path(__file__).parent.parent / "assets" / "results"
+        input_file = Path(settings.SOURCE_PATH) /  "movies" / f"{video_name}.mp4"
+        output_dir = Path(settings.SOURCE_PATH) / "results"
 
         # Формат имени выходного файла
         output_file = output_dir / (video_name + salt + ".mp4")
@@ -37,9 +38,7 @@ class Video:
         return Path(output_path) 
     
     async def stream(self, start_time: float, end_time: float, video_name: str):
-        input_file = Path(__file__).parent.parent / "assets" / "movies" / f"{video_name}.mp4"
-
-        print(input_file, '1 382 32183 2938 9283 28093 21890')
+        input_file = Path(settings.SOURCE_PATH) / "movies" / f"{video_name}.mp4"
 
         command = (
             ffmpeg.input(str(input_file), ss=start_time, t=6)
