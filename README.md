@@ -12,6 +12,9 @@ uv init
 uv add fastapi uvicorn httpx
 
 
+docker build -t videocut . 
+docker run -d -p 8000:8000 --name videocut-container videocut
+
 Задача разработать приложение на ч (). 
 
 {
