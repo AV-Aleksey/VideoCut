@@ -33,10 +33,9 @@ def compare_percent(query, text):
 
 class Subtitles:
     def get(self, name):
-        print()
-        srt_path = Path(settings.SOURCE_PATH) / "subtitles" / f"{name}.srt"
-        json_path = Path(settings.SOURCE_PATH) / "subtitles" / "json" / f"{name}.json"
-
+        srt_path = Path(settings.STATIC_PATH) / "subtitles" / f"{name}.srt"
+        json_path = Path(settings.STATIC_PATH) / "subtitles" / "json" / f"{name}.json"
+        
         if json_path.exists():
             with open(json_path, 'r', encoding='utf-8') as json_file:
                 return json.load(json_file)
@@ -53,8 +52,8 @@ class Subtitles:
         
 
     def list(self):
-        subtitles_dir = Path(settings.SOURCE_PATH) / "subtitles"
-
+        subtitles_dir = Path(settings.STATIC_PATH) / "subtitles"
+        
         return [file.stem for file in subtitles_dir.glob("*.srt")]
 
     def parse(self, path) -> List[Dict[str, str]]:
@@ -78,6 +77,8 @@ class Subtitles:
     
     def find(self, search_text, movie_name, threshold: int = 60):
         subtitles = self.get(movie_name)
+        print(subtitles)
+        
         if not subtitles:
             return None
 

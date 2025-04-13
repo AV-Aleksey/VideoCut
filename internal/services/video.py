@@ -17,10 +17,10 @@ class Video:
     def cut(self, start_time, end_time, video_name):
         salt = uuid.uuid4().hex
 
-        print(settings.SOURCE_PATH)
+        print(settings.STATIC_PATH)
         
-        input_file = Path(settings.SOURCE_PATH) /  "movies" / f"{video_name}.mp4"
-        output_dir = Path(settings.SOURCE_PATH) / "results"
+        input_file = Path(settings.STATIC_PATH) /  "movies" / f"{video_name}.mp4"
+        output_dir = Path(settings.STATIC_PATH) / "results"
 
         # Формат имени выходного файла
         output_file = output_dir / (video_name + salt + ".mp4")
@@ -38,7 +38,7 @@ class Video:
         return Path(output_path) 
     
     async def stream(self, start_time: float, end_time: float, video_name: str):
-        input_file = Path(settings.SOURCE_PATH) / "movies" / f"{video_name}.mp4"
+        input_file = Path(settings.STATIC_PATH) / "movies" / f"{video_name}.mp4"
 
         command = (
             ffmpeg.input(str(input_file), ss=start_time, t=6)

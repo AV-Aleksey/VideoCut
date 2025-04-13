@@ -1,10 +1,10 @@
 # VideoCut
 
 uvicorn internal.main:app --reload
+python -m uvicorn internal.main:app --reload
 
 python -m venv .venv
 source .venv/Scripts/activate
-
 pip install uv
 
 uv init
@@ -45,5 +45,13 @@ http://127.0.0.1:8000/stream?movie_name=bumer&start_time=0%3A00%3A18&end_time=0%
 Нужно написать функцию которая бы отсеивала текст с помощью rapidfuzz в python. Запросы 
 
 На моем сервере есть папка с видео C:\Users\user\Desktop\my\VideoCut\internal\assets\movies с формате mp4. У меня есть проект fastApi. Я бы хотел реализовать возможность просматривать фрагмент из видео, например пользователь бы передавал мне название фильма и временную метку, сервер бы находил этот фрагмет и показывал пользователю (без скачивания), при этом надо учесть что это должно работать быстро и оптипизированно, клиент покинул сайт или ввел другой запрос уже открытая трансляция должна закрыться и после открыться новая
+
+
+
+
+Команда	nvm (Node.js)	pyenv (Python)
+Установка версии	nvm install 18	pyenv install 3.12.0
+Глобальное переключение	nvm use --global 18	pyenv global 3.12.0
+Локальное переключение	nvm use 18	pyenv local 3.12.0
 
 

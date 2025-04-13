@@ -9,11 +9,14 @@ COPY uv.lock /uv.lock
 COPY pyproject.toml /pyproject.toml
 
 # Создаем и активируем виртуальное окружение
-RUN python -m venv /internal/.venv
+# RUN python -m venv /internal/.venv
+RUN python -m venv .venv
 ENV PATH="/internal/.venv/bin:$PATH"
+# ENV PATH="/internal/.venv/bin:$PATH"
 
 # Install the application dependencies.
 WORKDIR /internal
+
 # Install the project's dependencies using the lockfile and settings
 RUN uv sync --frozen --no-install-project --no-dev
 

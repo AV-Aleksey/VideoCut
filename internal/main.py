@@ -7,8 +7,6 @@ from internal.schemas.video import DownloadVideoRequest, StreamVideoRequest
 from internal.services.subtitles import Subtitles
 from internal.services.video import Video
 
-
-
 app = FastAPI()
 
 @app.post("/video")
@@ -17,6 +15,7 @@ async def create_video(body: SubtitleRequest, subtitles_service: Subtitles = Dep
         start_time = time.time()
 
         result = []
+        
         for movie in subtitles_service.list():
             target = subtitles_service.find(movie_name=movie, search_text=body.text)
             
